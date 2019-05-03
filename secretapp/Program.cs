@@ -4,6 +4,7 @@ using System.Net;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Microsoft.Azure.Services.AppAuthentication;
 
 namespace secretapp
 {
@@ -53,7 +54,7 @@ namespace secretapp
             return token;
         }
         
-        private static async Task GetSecretFromKeyVault(AzureServiceTokenProvider azureServiceTokenProvider)
+        private static void GetSecretFromKeyVault(AzureServiceTokenProvider azureServiceTokenProvider)
         {
             KeyVaultClient keyVaultClient =
                 new KeyVaultClient(
