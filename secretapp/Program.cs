@@ -12,10 +12,14 @@ namespace secretapp
         static void Main(string[] args)
         {
             // Step 1: Get a token from the local (URI) Managed Service Identity endpoint, which in turn fetches it from Azure AD
-            var token = GetToken();
+            //var token = GetToken();
 
             // Step 2: Fetch the secret value from your key vault
-            System.Console.WriteLine(FetchSecretValueFromKeyVault(token));
+            //System.Console.WriteLine(FetchSecretValueFromKeyVault(token));
+            
+            AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
+
+            GetSecretFromKeyVault(azureServiceTokenProvider).Wait();
         }
 
         static string GetToken()
@@ -47,6 +51,30 @@ namespace secretapp
                 token = ojObject.Value.ToString();
             }
             return token;
+        }
+        
+        private static async Task GetSecretFromKeyVault(AzureServiceTokenProvider azureServiceTokenProvider)
+        {
+            KeyVaultClient keyVaultClient =
+                new KeyVaultClient(
+                    new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
+
+            var keyVaultName = "jpwskeyvault";
+            var secret = "jabberwocky";
+
+            try
+            {
+                var secret = await keyVaultClient
+                    .GetSecretAsync($"https://{keyVaultName}.vault.azure.net/secrets/{secret}")
+                    .ConfigureAwait(false);
+
+                Console.WriteLine($"Secret: {secret.Value}");
+
+            }
+            catch (Exception exp)
+            {
+                Console.WriteLine($"Something went wrong: {exp.Message}");
+            }
         }
     }
 }
